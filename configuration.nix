@@ -99,6 +99,12 @@ in
 
   # Install firefox.
   programs.firefox.enable = true;
+  programs.steam = {
+  enable = true;
+  remotePlay.openFirewall = false; # Open ports in the firewall for Steam Remote Play
+  dedicatedServer.openFirewall = false; # Open ports in the firewall for Source Dedicated Server
+  localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
+};
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -106,7 +112,10 @@ in
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+  google-chrome
+  beancount
   neovim
+  steam
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   git
   #  wget
@@ -130,7 +139,7 @@ in
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave
