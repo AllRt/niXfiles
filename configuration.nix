@@ -1,23 +1,25 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config , pkgs, ... }:
-
-let 
-nixpkgs2 = builtins.fetchTarball {
-    url    = "https://github.com/NixOS/nixpkgs/archive/25.05.tar.gz";
-    sha256 = "1915r28xc4znrh2vf4rrjnxldw2imysz819gzhk9qlrkqanmfsxd";
-  };
-
-  # pkgs = import nixpkgs { config = {}; };
-
-in
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  config,
+  inputs,
+  pkgs,
+  ...
+}: let
+  # nixpkgs2 = builtins.fetchTarball {
+  #   url = "https://github.com/NixOS/nixpkgs/archive/25.05.tar.gz";
+  #   sha256 = "1915r28xc4znrh2vf4rrjnxldw2imysz819gzhk9qlrkqanmfsxd";
+  # };
+  # pkgs = import nixpkgs { config = {}; };
+in {
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+    inputs.home-manager.nixosModules.home-manager
+    ./zsh.nix
+    #  inputs.nvf.nixosModules.default
+  ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -32,7 +34,7 @@ in
 
   # Enable networking
   networking.networkmanager.enable = true;
-  nix.nixPath = [ "nixos-config=/home/smsr/src/niXfiles/configuration.nix" ];
+  # nix.nixPath = ["nixos-config=/home/smsr/src/niXfiles/configuration.nix"];
 
   # Set your time zone.
   time.timeZone = "Europe/Kyiv";
@@ -87,39 +89,58 @@ in
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+
+  home-manager = {
+    extraSpecialArgs = {inherit inputs;};
+    users = {
+      smsr = import ./home.nix;
+    };
+    backupFileExtension =
+      "backup-"
+      + pkgs.lib.readFile "${pkgs.runCommand "timestamp" {} "echo -n `date '+%Y%m%d%H%M%S'` > $out"}";
+    useGlobalPkgs = false;
+  };
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.smsr = {
     isNormalUser = true;
     description = "smsr";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
-    #  thunderbird
+      #  thunderbird
     ];
   };
 
   # Install firefox.
   programs.firefox.enable = true;
   programs.steam = {
-  enable = true;
-  remotePlay.openFirewall = false; # Open ports in the firewall for Steam Remote Play
-  dedicatedServer.openFirewall = false; # Open ports in the firewall for Source Dedicated Server
-  localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
-};
+    enable = true;
+    remotePlay.openFirewall = false; # Open ports in the firewall for Steam Remote Play
+    dedicatedServer.openFirewall = false; # Open ports in the firewall for Source Dedicated Server
+    localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
+  };
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs; [
-  google-chrome
-  beancount
-  neovim
-  steam
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  git
-  #  wget
-  ];
+  environment.systemPackages = with pkgs;
+    [
+      google-chrome
+      obs-studio
+      beancount
+      neovim
+      steam
+      #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+      git
+      #  wget
+    ];
+
+fonts.packages = with pkgs; [
+      nerd-fonts.fira-code
+      nerd-fonts.droid-sans-mono
+    ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -139,7 +160,7 @@ in
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = ["nix-command" "flakes"];
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave
@@ -147,5 +168,4 @@ in
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "25.05"; # Did you read the comment?
-
 }
