@@ -5,6 +5,7 @@
   config,
   inputs,
   pkgs,
+  pkgs-master,
   ...
 }: let
   # nixpkgs2 = builtins.fetchTarball {
@@ -34,8 +35,12 @@ in {
 
   # Enable networking
   networking.networkmanager.enable = true;
-  # nix.nixPath = ["nixos-config=/home/smsr/src/niXfiles/configuration.nix"];
+  # nix.nixPath = [];
 
+nix.nixPath = [
+  "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos"
+  "nixos-config=/home/smsr/src/niXfiles/configuration.nix"
+];
   # Set your time zone.
   time.timeZone = "Europe/Kyiv";
 
@@ -135,12 +140,21 @@ in {
       #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
       git
       #  wget
+      oxipng
+      yazi
+      comma
+      pkgs-master.claude-code
+      
     ];
 
 fonts.packages = with pkgs; [
       nerd-fonts.fira-code
       nerd-fonts.droid-sans-mono
     ];
+  programs.nh = {
+    enable = true;
+    flake = "/home/smsr/src/niXfiles";
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
