@@ -22,6 +22,17 @@ in {
     #  inputs.nvf.nixosModules.default
   ];
 
+services.openssh = {
+    enable = true;
+    ports = [ 22 ];
+    settings = {
+      PasswordAuthentication = false;
+      AllowUsers = null; # Allows all users by default. Can be [ "user1" "user2" ]
+      UseDns = true;
+      X11Forwarding = false;
+      PermitRootLogin = "prohibit-password"; # "yes", "without-password", "prohibit-password", "forced-commands-only", "no"
+    };
+  };
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -108,6 +119,11 @@ nix.nixPath = [
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.smsr = {
+openssh = {
+      authorizedKeys.keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAG+yaR+V4osEzcipG2R2Tdmu7ZWswe4IZNpaXNOkzTu askold@nixos"
+      ];
+    };
     isNormalUser = true;
     description = "smsr";
     extraGroups = ["networkmanager" "wheel"];
@@ -144,7 +160,7 @@ nix.nixPath = [
       yazi
       comma
       pkgs-master.claude-code
-      
+      tmux
     ];
 
 fonts.packages = with pkgs; [
